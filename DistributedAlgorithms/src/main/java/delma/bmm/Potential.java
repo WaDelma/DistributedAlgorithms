@@ -9,10 +9,9 @@ public class Potential extends State {
 		super("POTENTIAL");
 	}
 
-	public void set(int integer) {
-		if (smallest > integer) {
-			smallest = integer;
-		}
+	public Potential(Potential potential, int round) {
+		this();
+		smallest = Math.min(potential.smallest, round);
 	}
 
 	public int get() {

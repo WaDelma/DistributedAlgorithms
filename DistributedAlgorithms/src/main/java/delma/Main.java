@@ -20,10 +20,16 @@ public class Main {
 		nodes.add(new Node());
 		nodes.add(new Node());
 		nodes.add(new Node());
-		nodes.get(1).add(nodes.get(4), nodes.get(5), nodes.get(7));
-		nodes.get(0).add(nodes.get(4), nodes.get(6));
-		nodes.get(2).add(nodes.get(6));
-		nodes.get(3).add(nodes.get(6), nodes.get(7));
+		connect(nodes.get(0), 1, nodes.get(4), 2);
+		connect(nodes.get(1), 1, nodes.get(4), 1);
+		connect(nodes.get(2), 1, nodes.get(6), 2);
+		connect(nodes.get(3), 1, nodes.get(6), 3);
+
+		connect(nodes.get(0), 2, nodes.get(6), 1);
+		connect(nodes.get(1), 2, nodes.get(5), 1);
+		connect(nodes.get(3), 2, nodes.get(7), 2);
+
+		connect(nodes.get(1), 3, nodes.get(7), 1);
 		PortGraph graph = new PortGraph(nodes);
 		Map<Node, GettableSet<State>> states = new HashMap<>();
 		for(int i = 0; i < nodes.size(); i++) {
@@ -37,14 +43,14 @@ public class Main {
 		}
 		Algorithm algo = new BMM();
 		graph.init(algo, states);
-		int i = 0;
+		int round = 0;
 		System.out.println("BEFORE:");
 		print(nodes, states);
 		while(graph.tick(algo, states)) {
-			i++;
-			System.out.println(i);
+			round++;
+			System.out.println("ROUND: " + round);
 			print(nodes, states);
-			if(i == 6){
+			if(round == 6){
 				break;
 			}
 		}
@@ -52,10 +58,15 @@ public class Main {
 		print(nodes, states);
 	}
 
+	private static void connect(Node node1, int port1, Node node2, int port2) {
+		node1.set(port1, node2);
+		node2.set(port2, node1);
+	}
+
 	private static void print(List<Node> nodes,
 			Map<Node, GettableSet<State>> states) {
 		for(Node node: nodes){
-			System.out.println(node.getPorts().size() + ":" + states.get(node));
+			System.out.println(node + "=" + states.get(node));
 		}
 	}
 

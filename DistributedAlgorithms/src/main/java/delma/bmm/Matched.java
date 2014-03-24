@@ -3,10 +3,11 @@ package delma.bmm;
 import delma.State;
 
 public class Matched extends State {
+	public static final Matched UNMATCHED = new Matched(-1);
 	private int port;
 
 	public Matched(int port) {
-		super("MATCHED");
+		super("MATCHED:" + port);
 		this.port = port;
 	}
 

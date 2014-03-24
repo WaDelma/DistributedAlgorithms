@@ -2,33 +2,37 @@ package delma;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 public class Node {
-	private Map<Node, Integer> ports;
+	private Map<Node, Integer> nodeToPort;
+	private Map<Integer, Node> portToNode;
 
 	public Node() {
-		ports = new HashMap<>();
-	}
-
-	public void add(Node... nodes) {
-		int port = ports.size();
-		for (Node node : nodes) {
-			if(ports.containsKey(node)){
-				continue;
-			}
-			ports.put(node, port);
-			node.add(this);
-			port++;
-		}
-	}
-
-	public Map<Node, Integer> getPorts() {
-		return ports;
+		portToNode = new HashMap<>();
+		nodeToPort = new HashMap<>();
 	}
 
 	@Override
 	public String toString() {
-		return "" + ports.size();
+		return Integer.toHexString(Objects.hashCode(this)) + "|" + ports();
+	}
+
+	public void set(int port, Node node) {
+		portToNode.put(port, node);
+		nodeToPort.put(node, port);
+	}
+
+	public Node get(int port) {
+		return portToNode.get(port);
+	}
+
+	public Integer get(Node node) {
+		return nodeToPort.get(node);
+	}
+
+	public int ports() {
+		return nodeToPort.size();
 	}
 
 }
