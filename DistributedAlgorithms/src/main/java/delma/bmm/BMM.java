@@ -10,8 +10,9 @@ public class BMM implements Algorithm {
 	@Override
 	public void init(int length, GettableSet<State> states) {
 		states.add(new All(length));
-		states.add(new Round(0));
+		states.add(new Round(1));
 		states.add(Type.RUNNING);
+		states.add(new Potential());
 	}
 
 	@Override
@@ -23,7 +24,7 @@ public class BMM implements Algorithm {
 				states.add(new Round(round + 1));
 				if (round % 2 == 0) {
 					Potential potential = states.get(Potential.class);
-					if (potential != null) {
+					if (potential.isNonEmpty()) {
 						states.add(new Matched(potential.get()));
 						states.add(Type.STOPPED);
 					}else if (states.get(All.class).isEmpty()) {
@@ -37,11 +38,7 @@ public class BMM implements Algorithm {
 						} else if (message == BMMMessage.PROPOSAL) {
 							Potential potential = states
 									.get(Potential.class);
-							if (potential == null) {
-								potential = new Potential();
-								states.add(potential);
-							}
-							potential.set(round);
+							potential.set(round - 1);
 						}
 					}
 				}
@@ -76,7 +73,7 @@ public class BMM implements Algorithm {
 					|| !states.contains(Matched.class)) {
 				if (states.get(Round.class).getRounds() % 2 == 0) {
 					Potential potential = states.get(Potential.class);
-					if (potential != null) {
+					if (potential.isNonEmpty()) {
 						messages[potential.get()] = BMMMessage.ACCEPT;
 					}
 				}
@@ -93,7 +90,7 @@ public class BMM implements Algorithm {
 				} else {
 					if (round % 2 == 1) {
 						if (round < messages.length) {
-							messages[round] = BMMMessage.PROPOSAL;
+							messages[round - 1] = BMMMessage.PROPOSAL;
 						}
 					}
 				}
