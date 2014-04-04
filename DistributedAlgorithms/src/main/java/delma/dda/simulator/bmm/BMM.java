@@ -1,13 +1,17 @@
-package delma.bmm;
+package delma.dda.simulator.bmm;
 
-import delma.Algorithm;
-import delma.GettableSet;
-import delma.Message;
-import delma.MessageCenter;
-import delma.Node;
-import delma.State;
+import delma.dda.simulator.Algorithm;
+import delma.dda.simulator.GettableSet;
+import delma.dda.simulator.Message;
+import delma.dda.simulator.MessageCenter;
+import delma.dda.simulator.Node;
+import delma.dda.simulator.State;
 
 public class BMM implements Algorithm {
+
+	private boolean even(int round) {
+		return (round & 1) == 0;
+	}
 
 	@Override
 	public void init(int length, GettableSet<State> states) {
@@ -15,6 +19,11 @@ public class BMM implements Algorithm {
 		states.add(new Round(1));
 		states.add(Type.RUNNING);
 		states.add(new Potential());
+	}
+
+	@Override
+	public boolean isRunning(GettableSet<State> states) {
+		return states.contains(Type.RUNNING);
 	}
 
 	@Override
@@ -81,14 +90,5 @@ public class BMM implements Algorithm {
 			center.send(node, round, BMMMessage.PROPOSAL);
 		}
 
-	}
-
-	private boolean even(int round) {
-		return (round & 1) == 0;
-	}
-
-	@Override
-	public boolean isRunning(GettableSet<State> states) {
-		return states.contains(Type.RUNNING);
 	}
 }

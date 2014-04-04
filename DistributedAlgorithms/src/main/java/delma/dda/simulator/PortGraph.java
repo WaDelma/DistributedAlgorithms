@@ -1,4 +1,4 @@
-package delma;
+package delma.dda.simulator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,25 +23,14 @@ public class PortGraph {
 	}
 
 	public void init(Algorithm algo, Map<Node, GettableSet<State>> states) {
-		for (Node node : nodes) {
-			algo.init(node.ports(), states.get(node));
-		}
+		nodes.parallelStream().forEach((Node node) -> algo.init(node.ports(), states.get(node)));
 	}
 
 	public boolean tick(Algorithm algo, Map<Node, GettableSet<State>> states) {
-		for (Node node : nodes) {
-			algo.send(node, center, states.get(node));
-		}
-		boolean running = false;
-		for (Node node : nodes) {
-			GettableSet<State> nodeStates = states.get(node);
-			algo.receive(node, center, nodeStates);
-			if (algo.isRunning(nodeStates)) {
-				running = true;
-			}
-		}
+		nodes.parallelStream().forEach((Node node) -> algo.send(node, center, states.get(node)));
+		nodes.parallelStream().forEach((Node node) -> algo.receive(node, center, states.get(node)));
 		center.clear();
-		return running;
+		return nodes.parallelStream().allMatch((Node node) -> algo.isRunning(states.get(node)));
 	}
 
 	@Override

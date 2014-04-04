@@ -1,4 +1,4 @@
-package delma;
+package delma.dda.simulator;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -15,29 +15,16 @@ public class GettableSet<T>{
 		return true;
 	}
 
-	public boolean remove(Object o) {
-		map.remove(o);
-		return true;
-	}
-
-	public Iterator<T> iterator() {
-		return map.values().iterator();
-	}
-
-	public int size() {
-		return map.size();
-	}
-
-	public boolean contains(T t) {
-		return map.containsValue(t);
+	public void clear() {
+		map.clear();
 	}
 
 	public boolean contains(Class<? extends T> clazz) {
 		return map.containsKey(clazz);
 	}
 
-	public void clear() {
-		map.clear();
+	public boolean contains(T t) {
+		return map.containsValue(t);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -47,6 +34,19 @@ public class GettableSet<T>{
 
 	public boolean isEmpty() {
 		return map.isEmpty();
+	}
+
+	public Iterator<T> iterator() {
+		return map.values().iterator();
+	}
+
+	public boolean remove(Object o) {
+		map.remove(o);
+		return true;
+	}
+
+	public int size() {
+		return map.size();
 	}
 
 	@Override

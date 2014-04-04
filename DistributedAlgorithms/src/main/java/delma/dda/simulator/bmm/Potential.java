@@ -1,6 +1,6 @@
-package delma.bmm;
+package delma.dda.simulator.bmm;
 
-import delma.State;
+import delma.dda.simulator.State;
 
 public class Potential extends State {
 	private int smallest = Integer.MAX_VALUE;
@@ -18,12 +18,12 @@ public class Potential extends State {
 		return smallest;
 	}
 
+	public boolean isNonEmpty() {
+		return smallest != Integer.MAX_VALUE;
+	}
+
 	@Override
 	public String toString() {
 		return super.toString() + ":" + (isNonEmpty() ? smallest : "empty");
-	}
-
-	public boolean isNonEmpty() {
-		return smallest != Integer.MAX_VALUE;
 	}
 }

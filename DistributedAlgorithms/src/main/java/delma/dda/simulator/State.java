@@ -1,15 +1,10 @@
-package delma;
+package delma.dda.simulator;
 
 public class State {
 	private String name;
 
 	public State(String name) {
 		this.name = name;
-	}
-
-	@Override
-	public final int hashCode() {
-		return name.hashCode();
 	}
 
 	@Override
@@ -21,6 +16,11 @@ public class State {
 			return name.equals(((State) obj).name);
 		}
 		return false;
+	}
+
+	@Override
+	public final int hashCode() {
+		return name.hashCode();
 	}
 
 	@Override

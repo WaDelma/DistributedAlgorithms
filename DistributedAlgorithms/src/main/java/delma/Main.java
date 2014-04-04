@@ -5,10 +5,20 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import delma.bmm.BMM;
-import delma.bmm.Color;
+import delma.dda.simulator.Algorithm;
+import delma.dda.simulator.GettableSet;
+import delma.dda.simulator.Node;
+import delma.dda.simulator.PortGraph;
+import delma.dda.simulator.State;
+import delma.dda.simulator.bmm.BMM;
+import delma.dda.simulator.bmm.Color;
 
 public class Main {
+
+	private static void connect(Node node1, int port1, Node node2, int port2) {
+		node1.set(port1, node2);
+		node2.set(port2, node1);
+	}
 
 	public static void main(String[] args) {
 		List<Node> nodes = new ArrayList<>();
@@ -56,11 +66,6 @@ public class Main {
 		}
 		System.out.println("AFTER:");
 		print(nodes, states);
-	}
-
-	private static void connect(Node node1, int port1, Node node2, int port2) {
-		node1.set(port1, node2);
-		node2.set(port2, node1);
 	}
 
 	private static void print(List<Node> nodes,

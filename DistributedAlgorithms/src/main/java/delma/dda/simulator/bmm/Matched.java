@@ -1,6 +1,6 @@
-package delma.bmm;
+package delma.dda.simulator.bmm;
 
-import delma.State;
+import delma.dda.simulator.State;
 
 public class Matched extends State {
 	public static final Matched UNMATCHED = new Matched(-1);

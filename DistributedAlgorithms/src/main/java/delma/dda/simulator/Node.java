@@ -1,4 +1,4 @@
-package delma;
+package delma.dda.simulator;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -13,16 +13,6 @@ public class Node {
 		nodeToPort = new HashMap<>();
 	}
 
-	@Override
-	public String toString() {
-		return Integer.toHexString(Objects.hashCode(this)) + "|" + ports();
-	}
-
-	public void set(int port, Node node) {
-		portToNode.put(port, node);
-		nodeToPort.put(node, port);
-	}
-
 	public Node get(int port) {
 		return portToNode.get(port);
 	}
@@ -33,6 +23,16 @@ public class Node {
 
 	public int ports() {
 		return nodeToPort.size();
+	}
+
+	public void set(int port, Node node) {
+		portToNode.put(port, node);
+		nodeToPort.put(node, port);
+	}
+
+	@Override
+	public String toString() {
+		return Integer.toHexString(Objects.hashCode(this)) + "|" + ports();
 	}
 
 }
