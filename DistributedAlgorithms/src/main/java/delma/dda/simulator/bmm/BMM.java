@@ -1,94 +1,126 @@
 package delma.dda.simulator.bmm;
 
+import java.util.Map;
+
 import delma.dda.simulator.Algorithm;
-import delma.dda.simulator.GettableSet;
 import delma.dda.simulator.Message;
 import delma.dda.simulator.MessageCenter;
-import delma.dda.simulator.Node;
+import delma.dda.simulator.PortGraph.Node;
 import delma.dda.simulator.State;
 
 public class BMM implements Algorithm {
 
-	private boolean even(int round) {
-		return (round & 1) == 0;
+	public enum BMMMessage implements Message {
+		MATCHED, PROPOSAL, ACCEPT
+	}
+
+	public static enum BMMState implements State {
+		EVEN, RUNNING, POTENTIAL, MATCHED, COLOR, ALL, ROUND
+	}
+
+	public static enum Color {
+		WHITE, BLACK;
 	}
 
 	@Override
-	public void init(int length, GettableSet<State> states) {
-		states.add(new All(length));
-		states.add(new Round(1));
-		states.add(Type.RUNNING);
-		states.add(new Potential());
+	public void init(int length, Map<State, Object> states) {
+		states.put(BMMState.ALL, length);
+		states.put(BMMState.ROUND, 1);
+		states.put(BMMState.EVEN, Boolean.FALSE);
+		states.put(BMMState.RUNNING, Boolean.TRUE);
+		states.put(BMMState.POTENTIAL, -1);
 	}
 
 	@Override
-	public boolean isRunning(GettableSet<State> states) {
-		return states.contains(Type.RUNNING);
+	public boolean isRunning(Map<State, Object> states) {
+		return states.get(BMMState.RUNNING) == Boolean.TRUE;
 	}
 
 	@Override
 	public void receive(Node node, MessageCenter center,
-			GettableSet<State> states) {
-		if (!states.contains(Type.RUNNING)) {
+			Map<State, Object> states) {
+		if (states.get(BMMState.RUNNING) == Boolean.FALSE) {
 			return;
 		}
-		boolean black = states.contains(Color.BLACK);
-		boolean matched = states.contains(Matched.class);
-		int round = states.get(Round.class).getRounds();
-		boolean even = even(round);
-		Potential potential = states.get(Potential.class);
-		All all = states.get(All.class);
+		boolean black = states.get(BMMState.COLOR) == Color.BLACK;
+		boolean matched = states.containsKey(BMMState.MATCHED);
+		boolean even = states.get(BMMState.EVEN) == Boolean.TRUE;
+		int round = (int) states.get(BMMState.ROUND);
+		int index = round / 2 + 1;
+		int potential = (int) states.get(BMMState.POTENTIAL);
+		int all = (int) states.get(BMMState.ALL);
 
-		if (black && !matched && even && potential.isNonEmpty()) {
-			states.add(new Matched(potential.get()));
-			states.add(Type.STOPPED);
+		if (even) {
+			states.put(BMMState.EVEN, Boolean.FALSE);
+		} else {
+			states.put(BMMState.EVEN, Boolean.TRUE);
 		}
-		if (black && !matched && even && all.isEmpty()) {
-			states.add(Type.STOPPED);
-		}
-		for (int port = 1; port <= node.ports(); port++) {
-			Message message = center.receive(node, port);
-			if (black && !matched && !even && message == BMMMessage.MATCHED) {
-				states.add(new All(all.get() - 1));
+		states.put(BMMState.ROUND, round + 1);
+
+		if (black) {
+			if (!matched) {
+				if (even) {
+					if (potential != -1) {
+						states.put(BMMState.MATCHED, potential);
+						states.put(BMMState.RUNNING, Boolean.FALSE);
+					}
+					if (all == 0) {
+						states.put(BMMState.RUNNING, Boolean.FALSE);
+					}
+				} else {
+					for (int port = 1; port <= node.ports(); port++) {
+						Message message = center.receive(node, port);
+						if (message == BMMMessage.MATCHED) {
+							states.put(BMMState.ALL, all - 1);
+						}
+						if (message == BMMMessage.PROPOSAL) {
+							if (potential == -1 || port < potential) {
+								states.put(BMMState.POTENTIAL, port);
+								potential = port;
+							}
+						}
+					}
+				}
 			}
-			if (black && !matched && !even && message == BMMMessage.PROPOSAL) {
-				states.add(new Potential(states.get(Potential.class), port));
+		} else {
+			if (matched) {
+				states.put(BMMState.RUNNING, Boolean.FALSE);
+			} else if (even) {
+				for (int port = 1; port <= node.ports(); port++) {
+					if (center.receive(node, port) == BMMMessage.ACCEPT) {
+						states.put(BMMState.MATCHED, port);
+					}
+				}
+			} else if (index > node.ports()) {
+				states.put(BMMState.RUNNING, Boolean.FALSE);
 			}
-			if (!black && !matched && even && message == BMMMessage.ACCEPT) {
-				states.add(new Matched(port));
-			}
 		}
-		if (!black && !matched && !even && round > node.ports()) {
-			states.add(Type.STOPPED);
-		}
-		if (!black && matched) {
-			states.add(Type.STOPPED);
-		}
-		states.add(new Round(round + 1));
 	}
 
 	@Override
-	public void send(Node node, MessageCenter center, GettableSet<State> states) {
-		if (!states.contains(Type.RUNNING)) {
+	public void send(Node node, MessageCenter center, Map<State, Object> states) {
+		if (states.get(BMMState.RUNNING) == Boolean.FALSE) {
 			return;
 		}
-		boolean black = states.contains(Color.BLACK);
-		boolean matched = states.contains(Matched.class);
-		int round = states.get(Round.class).getRounds();
-		boolean even = even(round);
-		Potential potential = states.get(Potential.class);
+		boolean black = states.get(BMMState.COLOR) == Color.BLACK;
+		boolean matched = states.containsKey(BMMState.MATCHED);
+		boolean even = states.get(BMMState.EVEN) == Boolean.TRUE;
+		int round = (int) states.get(BMMState.ROUND);
+		int index = round / 2 + 1;
+		int potential = (int) states.get(BMMState.POTENTIAL);
 
-		if (black && !matched && even && potential.isNonEmpty()) {
-			center.send(node, potential.get(), BMMMessage.ACCEPT);
-		}
-		if (!black && matched && !even) {
-			for (int port = 1; port <= node.ports(); port++) {
-				center.send(node, port, BMMMessage.MATCHED);
+		if (black) {
+			if (!matched && even && potential != -1) {
+				center.send(node, potential, BMMMessage.ACCEPT);
+			}
+		} else if (!even) {
+			if (matched) {
+				for (int port = 1; port <= node.ports(); port++) {
+					center.send(node, port, BMMMessage.MATCHED);
+				}
+			} else if (index <= node.ports()) {
+				center.send(node, index, BMMMessage.PROPOSAL);
 			}
 		}
-		if (!black && !matched && !even && round <= node.ports()) {
-			center.send(node, round, BMMMessage.PROPOSAL);
-		}
-
 	}
 }
