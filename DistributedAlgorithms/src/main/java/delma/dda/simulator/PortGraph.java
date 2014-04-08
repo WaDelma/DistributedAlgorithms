@@ -80,10 +80,14 @@ public class PortGraph {
 			nodeToPort.put(node, port);
 		}
 
+		public String getLabel() {
+			return label == null ? Integer.toHexString(Objects.hashCode(this))
+					: label;
+		}
+
 		@Override
 		public String toString() {
-			return label == null ? Integer.toHexString(Objects.hashCode(this))
-					: label + ":" + ports();
+			return  getLabel() + ":" + ports();
 		}
 
 	}
